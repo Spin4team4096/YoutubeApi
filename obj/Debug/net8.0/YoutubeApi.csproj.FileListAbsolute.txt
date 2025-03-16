@@ -32,3 +32,4 @@ C:\Users\joman\YoutubeApi\obj\Debug\net8.0\refint\YoutubeApi.dll
 C:\Users\joman\YoutubeApi\obj\Debug\net8.0\YoutubeApi.pdb
 C:\Users\joman\YoutubeApi\obj\Debug\net8.0\YoutubeApi.genruntimeconfig.cache
 C:\Users\joman\YoutubeApi\obj\Debug\net8.0\ref\YoutubeApi.dll
+C:\Users\joman\YoutubeApi\obj\Debug\net8.0\YoutubeApi.sourcelink.json
