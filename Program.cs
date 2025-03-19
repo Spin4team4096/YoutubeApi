@@ -11,7 +11,6 @@ app.MapGet("/getVideo", async (HttpContext context, [FromQuery] string videoId, 
     var youtube = new YoutubeClient();
     var streamManifest = await youtube.Videos.Streams.GetManifestAsync(videoId);
 
-    // If a specific quality is requested, find the stream with that quality
     IStreamInfo? streamInfo = null;
 
     if (!string.IsNullOrEmpty(quality))
@@ -22,7 +21,14 @@ app.MapGet("/getVideo", async (HttpContext context, [FromQuery] string videoId, 
             .FirstOrDefault(s => s.VideoQuality.ToString().ToLower() == qualityValue);
     }
 
-    // If no specific quality is requested or the requested quality isn't found, pick the highest bitrate
+    // If no specific quality is requested or the requested quality isn't found, try 480p
+    if (streamInfo == null)
+    {
+        streamInfo = streamManifest.GetVideoOnlyStreams()
+            .FirstOrDefault(s => s.VideoQuality.Label == "480p");
+    }
+
+    // If 480p is also unavailable, pick the highest bitrate
     if (streamInfo == null)
     {
         streamInfo = streamManifest.GetVideoOnlyStreams().GetWithHighestBitrate();
@@ -40,7 +46,7 @@ app.MapGet("/getVideo", async (HttpContext context, [FromQuery] string videoId, 
     context.Response.Headers["Content-Disposition"] = "inline; filename=\"video.mp4\"";
     await stream.CopyToAsync(context.Response.Body);
 
-    return Results.Ok(); // Return success status
+    return Results.Ok();
 });
 
 // Endpoint for AUDIO-ONLY M4A (no change here)
@@ -62,7 +68,7 @@ app.MapGet("/getAudio", async (HttpContext context, [FromQuery] string videoId) 
     context.Response.Headers["Content-Disposition"] = "inline; filename=\"audio.m4a\"";
     await stream.CopyToAsync(context.Response.Body);
 
-    return Results.Ok(); // Return success status
+    return Results.Ok();
 });
 
 app.Run();
