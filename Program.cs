@@ -1,25 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Allow CORS for all origins (You can specify specific origins if needed)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()  // Allow any origin to access the API
-              .AllowAnyMethod()  // Allow all HTTP methods (GET, POST, etc.)
-              .AllowAnyHeader(); // Allow all headers (including Content-Type)
-    });
-});
-
 var app = builder.Build();
-
-// Use CORS policy globally
-app.UseCors("AllowAll");
 
 // Endpoint for VIDEO-ONLY MP4 with optional quality parameter
 app.MapGet("/getVideo", async (HttpContext context, [FromQuery] string videoId, [FromQuery] string? quality) =>
