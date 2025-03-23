@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
+using System.Net;
+using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -39,7 +41,30 @@ app.MapGet("/getVideo", async (HttpContext context, [FromQuery] string videoId, 
         return Results.NotFound("Error: No valid video stream found.");
     }
 
-    using var httpClient = new HttpClient();
+    // Get cookies from environment variables
+    var cookies = Environment.GetEnvironmentVariable("YOUTUBE_COOKIES");
+    if (string.IsNullOrEmpty(cookies))
+    {
+        return Results.BadRequest("Error: No YouTube cookies found.");
+    }
+
+    // Prepare HttpClient with cookies
+    var cookieContainer = new CookieContainer();
+    foreach (var cookie in cookies.Split(';'))
+    {
+        var parts = cookie.Split('=');
+        if (parts.Length == 2)
+        {
+            cookieContainer.Add(new Uri("https://www.youtube.com"), new Cookie(parts[0], parts[1]));
+        }
+    }
+
+    var handler = new HttpClientHandler
+    {
+        CookieContainer = cookieContainer
+    };
+
+    using var httpClient = new HttpClient(handler);
     var stream = await httpClient.GetStreamAsync(streamInfo.Url);
 
     context.Response.ContentType = "video/mp4";
@@ -61,7 +86,29 @@ app.MapGet("/getAudio", async (HttpContext context, [FromQuery] string videoId) 
         return Results.NotFound("Error: No valid audio stream found.");
     }
 
-    using var httpClient = new HttpClient();
+    var cookies = Environment.GetEnvironmentVariable("YOUTUBE_COOKIES");
+    if (string.IsNullOrEmpty(cookies))
+    {
+        return Results.BadRequest("Error: No YouTube cookies found.");
+    }
+
+    // Prepare HttpClient with cookies
+    var cookieContainer = new CookieContainer();
+    foreach (var cookie in cookies.Split(';'))
+    {
+        var parts = cookie.Split('=');
+        if (parts.Length == 2)
+        {
+            cookieContainer.Add(new Uri("https://www.youtube.com"), new Cookie(parts[0], parts[1]));
+        }
+    }
+
+    var handler = new HttpClientHandler
+    {
+        CookieContainer = cookieContainer
+    };
+
+    using var httpClient = new HttpClient(handler);
     var stream = await httpClient.GetStreamAsync(streamInfo.Url);
 
     context.Response.ContentType = "audio/mp4"; // M4A format
